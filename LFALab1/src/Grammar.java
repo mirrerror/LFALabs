@@ -1,33 +1,32 @@
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Grammar {
 
-    public static final String START_SYMBOL = "S";
-    public static final List<String> NON_TERMINALS = List.of("S", "P", "Q");
-    public static final List<String> TERMINALS = List.of("a", "b", "c", "d", "e", "f");
-    public static final Map<String, List<String>> PRODUCTIONS = new HashMap<>();
+    private String startingSymbol;
+    private List<String> nonTerminalSymbols;
+    private List<String> terminalSymbols;
+    private Map<String, List<String>> productions;
 
-    static {
-        PRODUCTIONS.put("S", List.of("aP"));
-        PRODUCTIONS.put("P", List.of("bQ", "bP", "cP", "dQ", "e"));
-        PRODUCTIONS.put("Q", List.of("eQ", "a"));
+    public Grammar(String startingSymbol, List<String> nonTerminals, List<String> terminals, Map<String, List<String>> productions) {
+        this.startingSymbol = startingSymbol;
+        this.nonTerminalSymbols = nonTerminals;
+        this.terminalSymbols = terminals;
+        this.productions = productions;
     }
 
     public String generateString() {
-        String result = "";
-
-        result += getRandomProduction(START_SYMBOL);
+        String result = getRandomProduction(startingSymbol);
 
         boolean containsNonTerminal = true;
 
         while(containsNonTerminal) {
             containsNonTerminal = false;
             for(char entry : result.toCharArray()) {
-                if(NON_TERMINALS.contains(String.valueOf(entry))) {
-                    result = result.replaceFirst(String.valueOf(entry), getRandomProduction(String.valueOf(entry)));
+                String entryString = String.valueOf(entry);
+                if(nonTerminalSymbols.contains(entryString)) {
+                    result = result.replaceFirst(entryString, getRandomProduction(entryString));
                     containsNonTerminal = true;
                 }
             }
@@ -37,7 +36,38 @@ public class Grammar {
     }
 
     private String getRandomProduction(String nonTerminal) {
-        return PRODUCTIONS.get(nonTerminal).get(ThreadLocalRandom.current().nextInt(PRODUCTIONS.get(nonTerminal).size()));
+        return productions.get(nonTerminal).get(ThreadLocalRandom.current().nextInt(productions.get(nonTerminal).size()));
     }
 
+    public String getStartingSymbol() {
+        return startingSymbol;
+    }
+
+    public void setStartingSymbol(String startingSymbol) {
+        this.startingSymbol = startingSymbol;
+    }
+
+    public List<String> getNonTerminalSymbols() {
+        return nonTerminalSymbols;
+    }
+
+    public void setNonTerminalSymbols(List<String> nonTerminalSymbols) {
+        this.nonTerminalSymbols = nonTerminalSymbols;
+    }
+
+    public List<String> getTerminalSymbols() {
+        return terminalSymbols;
+    }
+
+    public void setTerminalSymbols(List<String> terminalSymbols) {
+        this.terminalSymbols = terminalSymbols;
+    }
+
+    public Map<String, List<String>> getProductions() {
+        return productions;
+    }
+
+    public void setProductions(Map<String, List<String>> productions) {
+        this.productions = productions;
+    }
 }
