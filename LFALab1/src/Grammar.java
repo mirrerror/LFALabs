@@ -1,15 +1,16 @@
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Grammar {
 
-    private String startingSymbol;
-    private List<String> nonTerminalSymbols;
-    private List<String> terminalSymbols;
-    private Map<String, List<String>> productions;
+    private final String startingSymbol;
+    private final Set<String> nonTerminalSymbols;
+    private final Set<String> terminalSymbols;
+    private final Map<String, List<String>> productions;
 
-    public Grammar(String startingSymbol, List<String> nonTerminals, List<String> terminals, Map<String, List<String>> productions) {
+    public Grammar(String startingSymbol, Set<String> nonTerminals, Set<String> terminals, Map<String, List<String>> productions) {
         this.startingSymbol = startingSymbol;
         this.nonTerminalSymbols = nonTerminals;
         this.terminalSymbols = terminals;
@@ -39,35 +40,8 @@ public class Grammar {
         return productions.get(nonTerminal).get(ThreadLocalRandom.current().nextInt(productions.get(nonTerminal).size()));
     }
 
-    public String getStartingSymbol() {
-        return startingSymbol;
+    public FiniteAutomaton toFiniteAutomaton(Map<String, Map<String, String>> transitions) {
+        return new FiniteAutomaton(nonTerminalSymbols, terminalSymbols, transitions, startingSymbol);
     }
 
-    public void setStartingSymbol(String startingSymbol) {
-        this.startingSymbol = startingSymbol;
-    }
-
-    public List<String> getNonTerminalSymbols() {
-        return nonTerminalSymbols;
-    }
-
-    public void setNonTerminalSymbols(List<String> nonTerminalSymbols) {
-        this.nonTerminalSymbols = nonTerminalSymbols;
-    }
-
-    public List<String> getTerminalSymbols() {
-        return terminalSymbols;
-    }
-
-    public void setTerminalSymbols(List<String> terminalSymbols) {
-        this.terminalSymbols = terminalSymbols;
-    }
-
-    public Map<String, List<String>> getProductions() {
-        return productions;
-    }
-
-    public void setProductions(Map<String, List<String>> productions) {
-        this.productions = productions;
-    }
 }
