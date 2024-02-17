@@ -1,3 +1,4 @@
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,8 +41,30 @@ public class Grammar {
         return productions.get(nonTerminal).get(ThreadLocalRandom.current().nextInt(productions.get(nonTerminal).size()));
     }
 
-    public FiniteAutomaton toFiniteAutomaton(Map<String, Map<String, String>> transitions) {
-        return new FiniteAutomaton(nonTerminalSymbols, terminalSymbols, transitions, startingSymbol);
+    public FiniteAutomaton toFiniteAutomaton() {
+        return new FiniteAutomaton(nonTerminalSymbols, terminalSymbols, buildTransitions(productions), startingSymbol);
+    }
+
+    private Map<String, Map<String, String>> buildTransitions(Map<String, List<String>> productions) {
+        Map<String, Map<String, String>> transitions = new HashMap<>();
+
+        for (Map.Entry<String, List<String>> entry : productions.entrySet()) {
+            String state = entry.getKey();
+            List<String> productionList = entry.getValue();
+
+            Map<String, String> stateTransitions = new HashMap<>();
+
+            for (String production : productionList) {
+                String symbol = production.substring(0, 1); // Get the first character as the symbol
+
+                String nextState = production.length() > 1 ? production.substring(1) : "accept";
+                stateTransitions.put(symbol, nextState);
+            }
+
+            transitions.put(state, stateTransitions);
+        }
+
+        return transitions;
     }
 
 }
