@@ -16,7 +16,7 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("Generating 5 strings using the provided grammar:");
-        for(int i = 0; i < 5; i++) System.out.println((i + 1) + ". " + grammar.generateString());
+        for(int i = 1; i <= 5; i++) System.out.println(i + ". " + grammar.generateString());
 
         System.out.print("Enter a string to check if it belongs to the language: ");
         String input = scanner.nextLine();
