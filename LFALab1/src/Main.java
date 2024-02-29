@@ -2,8 +2,7 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-//        Scanner scanner = new Scanner(System.in);
-//        testFirstLab(scanner);
+//        testFirstLab(new Scanner(System.in));
         testSecondLab();
     }
 
