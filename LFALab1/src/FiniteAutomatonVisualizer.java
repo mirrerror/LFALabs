@@ -7,6 +7,8 @@ import java.util.Set;
 public class FiniteAutomatonVisualizer extends JFrame {
     private final Map<String, Point> statePositions;
 
+    private static final Color STATE_COLOR = Color.decode("#9F00FF");
+
     public FiniteAutomatonVisualizer(FiniteAutomaton automaton) {
         super("Finite Automaton Visualization");
         setSize(600, 400);
@@ -59,7 +61,7 @@ public class FiniteAutomatonVisualizer extends JFrame {
 
 
         private void drawState(Graphics g, String state, Point position) {
-            g.setColor(Color.PINK);
+            g.setColor(STATE_COLOR);
             g.fillOval(position.x - 20, position.y - 20, 40, 40);
             g.setColor(Color.BLACK);
             g.drawOval(position.x - 20, position.y - 20, 40, 40);
@@ -88,7 +90,7 @@ public class FiniteAutomatonVisualizer extends JFrame {
             int offset = 15;
 
             Point position = statePositions.get(state);
-            g.setColor(Color.PINK);
+            g.setColor(STATE_COLOR);
             g.fillOval(position.x - offset, position.y - offset, 30, 30);
             g.setColor(Color.BLACK);
             g.drawOval(position.x - offset, position.y - offset, 30, 30);
@@ -106,7 +108,7 @@ public class FiniteAutomatonVisualizer extends JFrame {
 
         private void drawSelfLoop(Graphics g, int x, int y, String withSymbol) {
             int loopRadius = 20;
-            int arrowSize = 5;
+            int arrowSize = 15;
 
             g.drawOval(x - loopRadius, y - loopRadius * 2, loopRadius * 2, loopRadius * 2);
 
