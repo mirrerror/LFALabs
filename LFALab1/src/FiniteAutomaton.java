@@ -115,6 +115,10 @@ public class FiniteAutomaton {
         return new Grammar(startState, states, alphabet, buildProductions(mapStatesToNonTerminals));
     }
 
+    public Grammar toGrammar() {
+        return toGrammar(true);
+    }
+
     public boolean isDeterministic() {
         for (String state : transitions.keySet()) {
             Map<String, Set<String>> stateTransitions = transitions.get(state);

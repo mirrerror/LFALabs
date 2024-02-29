@@ -10,9 +10,9 @@ public class Grammar {
 
     public Grammar(String startingSymbol, Set<String> nonTerminals, Set<String> terminals, Map<String, List<String>> productions) {
         this.startingSymbol = startingSymbol;
-        this.nonTerminalSymbols = nonTerminals;
-        this.terminalSymbols = terminals;
-        this.productions = productions;
+        this.nonTerminalSymbols = new HashSet<>(nonTerminals);
+        this.terminalSymbols = new HashSet<>(terminals);
+        this.productions = new HashMap<>(productions);
     }
 
     public String generateString() {

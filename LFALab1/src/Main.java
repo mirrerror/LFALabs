@@ -49,7 +49,7 @@ public class Main {
                 Set.of("q2")
         );
 
-        Grammar grammar = finiteAutomaton.toGrammar(true);
+        Grammar grammar = finiteAutomaton.toGrammar();
 
         System.out.println("The grammar was converted to a finite automaton and then back to a grammar. The resulting grammar productions are: " + grammar.getProductions());
 
@@ -63,6 +63,5 @@ public class Main {
 
         System.out.println("The finite automaton was converted to deterministic. The resulting transitions are: " + convertedAutomaton.getTransitions());
         convertedAutomaton.visualize("The converted finite automaton");
-
     }
 }
