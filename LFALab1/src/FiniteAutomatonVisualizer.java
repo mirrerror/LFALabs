@@ -46,8 +46,14 @@ public class FiniteAutomatonVisualizer extends JFrame {
                 }
             }
 
+            drawStartingTransition(g, automaton.getStartState());
+
             for (Map.Entry<String, Point> entry : statePositions.entrySet()) {
                 drawState(g, entry.getKey(), entry.getValue());
+            }
+
+            for(String state : automaton.getAcceptStates()) {
+                drawFinal(g, state);
             }
         }
 
@@ -62,14 +68,7 @@ public class FiniteAutomatonVisualizer extends JFrame {
 
         private void drawTransition(Graphics g, String fromState, String toState, String delta) {
             Point fromPosition = statePositions.get(fromState);
-            Point toPosition;
-
-            if (toState != null) {
-                toPosition = statePositions.get(toState);
-            } else {
-                // For transitions to the final state (empty string)
-                toPosition = new Point(fromPosition.x + 80, fromPosition.y);
-            }
+            Point toPosition = statePositions.get(toState);
 
             Point intersection = calculateIntersectionPoint(fromPosition, toPosition, 10);
 
@@ -85,7 +84,25 @@ public class FiniteAutomatonVisualizer extends JFrame {
             g.drawString(delta, labelX, labelY);
         }
 
+        private void drawFinal(Graphics g, String state) {
+            int offset = 15;
 
+            Point position = statePositions.get(state);
+            g.setColor(Color.PINK);
+            g.fillOval(position.x - offset, position.y - offset, 30, 30);
+            g.setColor(Color.BLACK);
+            g.drawOval(position.x - offset, position.y - offset, 30, 30);
+            g.drawString(state, position.x - 5, position.y + 5);
+        }
+
+        private void drawStartingTransition(Graphics g, String state) {
+            Point toPosition = statePositions.get(state);
+            Point fromPosition = new Point(toPosition.x + 80, toPosition.y);
+
+            Point intersection = calculateIntersectionPoint(fromPosition, toPosition, 10);
+
+            drawArrow(g, fromPosition.x, fromPosition.y, intersection.x, intersection.y);
+        }
 
         private void drawSelfLoop(Graphics g, int x, int y, String withSymbol) {
             int loopRadius = 20;
@@ -143,7 +160,7 @@ public class FiniteAutomatonVisualizer extends JFrame {
         }
     }
 
-    public class AutomatonLayout {
+    public static class AutomatonLayout {
 
         public Map<String, Point> generateLayout(Set<String> states) {
             Map<String, Point> statePositions = new HashMap<>();
