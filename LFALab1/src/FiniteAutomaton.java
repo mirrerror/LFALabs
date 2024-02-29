@@ -165,7 +165,7 @@ public class FiniteAutomaton {
                for (String state : currentState) {
                    if (transitions.containsKey(state) && transitions.get(state).containsKey(symbol)) {
                        Set<String> nextStates = transitions.get(state).get(symbol);
-                       currentStateTransitions.put(symbol, Set.of(String.join("", nextStates))); // does this work for general case? xd
+                       currentStateTransitions.put(symbol, Set.of(String.join("", nextStates)));
                        stateQueue.add(nextStates);
                    }
                }

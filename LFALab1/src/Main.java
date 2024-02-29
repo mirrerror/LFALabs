@@ -4,7 +4,7 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.print("Enter the lab number (1 or 2): ");
+        System.out.print("Enter the lab number (from 1 to 2): ");
         int labNumber = scanner.nextInt();
 
         switch (labNumber) {
