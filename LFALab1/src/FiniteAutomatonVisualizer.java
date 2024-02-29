@@ -9,8 +9,8 @@ public class FiniteAutomatonVisualizer extends JFrame {
 
     private static final Color STATE_COLOR = Color.decode("#9F00FF");
 
-    public FiniteAutomatonVisualizer(FiniteAutomaton automaton) {
-        super("Finite Automaton Visualization");
+    public FiniteAutomatonVisualizer(FiniteAutomaton automaton, String title) {
+        super(title);
         setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 

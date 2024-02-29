@@ -130,8 +130,14 @@ public class FiniteAutomaton {
         return true;
     }
 
-    public void visualize() {
-        new FiniteAutomatonVisualizer(this);
+    public void convertToDeterministic() {
+        if (isDeterministic()) {
+            return;
+        }
+    }
+
+    public void visualize(String title) {
+        new FiniteAutomatonVisualizer(this, title);
     }
 
     public Set<String> getStates() {

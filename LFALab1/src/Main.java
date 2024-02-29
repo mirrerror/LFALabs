@@ -49,6 +49,12 @@ public class Main {
 
         System.out.println("The provided finite automaton is " + (finiteAutomaton.isDeterministic() ? "deterministic" : "non-deterministic") + ".");
 
-        finiteAutomaton.visualize();
+        finiteAutomaton.visualize("The initial finite automaton");
+
+        finiteAutomaton.convertToDeterministic();
+
+        System.out.println("The finite automaton was converted to deterministic. The resulting transitions are: " + finiteAutomaton.getTransitions());
+        finiteAutomaton.visualize("The converted finite automaton");
+
     }
 }
