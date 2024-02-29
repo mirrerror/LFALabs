@@ -1,4 +1,5 @@
 import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class FiniteAutomaton {
 
@@ -139,7 +140,7 @@ public class FiniteAutomaton {
         Map<String, Map<String, Set<String>>> newTransitions = new HashMap<>();
         Set<String> newAcceptStates = new HashSet<>();
 
-        Queue<Set<String>> stateQueue = new LinkedList<>();
+        Queue<Set<String>> stateQueue = new LinkedBlockingQueue<>();
         stateQueue.add(Set.of(startState));
 
         while (!stateQueue.isEmpty()) {
