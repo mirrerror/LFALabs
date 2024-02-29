@@ -104,8 +104,8 @@ public class FiniteAutomaton {
         return true;
     }
 
-    public FiniteAutomatonVisualizer visualize() {
-        return new FiniteAutomatonVisualizer(this);
+    public void visualize() {
+        new FiniteAutomatonVisualizer(this);
     }
 
     public Set<String> getStates() {
