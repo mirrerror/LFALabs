@@ -43,7 +43,7 @@ public class Main {
         );
 
         finiteAutomaton.visualize();
-        Grammar grammar = finiteAutomaton.toGrammar();
+        Grammar grammar = finiteAutomaton.toGrammar(true);
 
         System.out.println("The grammar was converted to a finite automaton and then back to a grammar. The resulting grammar productions are: " + grammar.getProductions());
 
@@ -51,15 +51,4 @@ public class Main {
 
         System.out.println("The provided finite automaton is " + (finiteAutomaton.isDeterministic() ? "deterministic" : "non-deterministic") + ".");
     }
-
-//    private static void testSecondLab2() {
-//        String startingSymbol = "q0";
-//        Set<String> nonTerminalSymbols = Set.of("q0", "q1", "q2", "q3");
-//        Set<String> terminalSymbols = Set.of("a", "c", "b");
-//        Map<String, List<String>> productions = Map.of(
-//                "S", List.of("aP", "bQ"),
-//                "P", List.of("bP", "cP", "dQ", "e"),
-//                "Q", List.of("eQ", "fQ", "a")
-//        );
-//    }
 }

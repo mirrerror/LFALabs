@@ -54,7 +54,25 @@ public class FiniteAutomaton {
         return false;
     }
 
-    private Map<String, List<String>> buildProductions() {
+    public static String mapStateToNonTerminal(String state) {
+        int stateNumber;
+
+        try {
+            stateNumber = Integer.parseInt(state.substring(1));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("State must be in the format qN, where N is a number");
+        }
+
+        if (stateNumber < 0) {
+            throw new IllegalArgumentException("State number must be non-negative");
+        }
+
+        char letter = (char) ('A' + stateNumber);
+
+        return String.valueOf(letter);
+    }
+
+    private Map<String, List<String>> buildProductions(boolean mapStatesToNonTerminals) {
         Map<String, List<String>> productions = new HashMap<>();
 
         for (String state : transitions.keySet()) {
@@ -75,17 +93,25 @@ public class FiniteAutomaton {
                 } else {
                     // Add a production for each next state
                     for (String nextState : nextStates) {
-                        productionList.add(symbol + nextState);
+                        productionList.add(symbol + ((mapStatesToNonTerminals) ? mapStateToNonTerminal(nextState) : nextState));
                     }
                 }
             }
         }
 
+        if(mapStatesToNonTerminals) {
+            Map<String, List<String>> newProductions = new HashMap<>();
+            for (String state : productions.keySet()) {
+                newProductions.put(mapStateToNonTerminal(state), productions.get(state));
+            }
+            return newProductions;
+        }
+
         return productions;
     }
 
-    public Grammar toGrammar() {
-        return new Grammar(startState, states, alphabet, buildProductions());
+    public Grammar toGrammar(boolean mapStatesToNonTerminals) {
+        return new Grammar(startState, states, alphabet, buildProductions(mapStatesToNonTerminals));
     }
 
     public boolean isDeterministic() {

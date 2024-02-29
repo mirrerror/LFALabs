@@ -75,8 +75,6 @@ public class Grammar {
     }
 
     public void defineChomskyType() {
-//        System.out.println("productions.values(): " + productions.values());
-//        System.out.println("productions.keys(): " + productions.keySet());
         if (productions.keySet().stream().allMatch(s -> s.length() == 1 && countNonTerminals(s) == 1)
                 && productions.values().stream().allMatch(list -> list.stream().allMatch(l -> countTerminals(l) <= 1) && list.stream().allMatch(l -> countNonTerminals(l) <= 1))) {
             System.out.println("The grammar is of type 3 (regular).");
