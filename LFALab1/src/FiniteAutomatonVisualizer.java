@@ -105,40 +105,42 @@ public class FiniteAutomatonVisualizer extends JFrame {
             int labelY = y - loopRadius * 2 - 10;
             g.drawString(withSymbol, labelX, labelY);
         }
+
         private Point calculateIntersectionPoint(Point from, Point to, int circleRadius) {
             double dx = to.x - from.x;
             double dy = to.y - from.y;
             double distance = Math.sqrt(dx * dx + dy * dy);
 
-            int intersectionX = from.x + (int) ((dx / distance) * (distance - circleRadius));
-            int intersectionY = from.y + (int) ((dy / distance) * (distance - circleRadius));
+            int intersectionX = from.x + (int) ((dx / distance) * (distance - circleRadius * 0.7));
+            int intersectionY = from.y + (int) ((dy / distance) * (distance - circleRadius * 0.7));
 
             return new Point(intersectionX, intersectionY);
         }
 
-
         private void drawArrow(Graphics g, int x1, int y1, int x2, int y2) {
             Graphics2D g2d = (Graphics2D) g.create();
 
-            double dx = x2 - x1;
-            double dy = y2 - y1;
-            double angle = Math.atan2(dy, dx);
+            int arrowLength = 10;
 
-            int arrowSize = 10;
+            double angle = Math.atan2(y2 - y1, x2 - x1);
 
-            g2d.drawLine(x1, y1, x2, y2);
+            Point intersection = calculateIntersectionPoint(new Point(x1, y1), new Point(x2, y2), 20);
 
-            int x = (int) (x2 - arrowSize * Math.cos(angle - Math.PI / 6));
-            int y = (int) (y2 - arrowSize * Math.sin(angle - Math.PI / 6));
-            g2d.drawLine(x2, y2, x, y);
+            int x3 = (int) (intersection.x - arrowLength * Math.cos(angle - Math.PI / 6));
+            int y3 = (int) (intersection.y - arrowLength * Math.sin(angle - Math.PI / 6));
+            int x4 = (int) (intersection.x - arrowLength * Math.cos(angle + Math.PI / 6));
+            int y4 = (int) (intersection.y - arrowLength * Math.sin(angle + Math.PI / 6));
 
-            x = (int) (x2 - arrowSize * Math.cos(angle + Math.PI / 6));
-            y = (int) (y2 - arrowSize * Math.sin(angle + Math.PI / 6));
-            g2d.drawLine(x2, y2, x, y);
+            g2d.drawLine(x1, y1, intersection.x, intersection.y);
+
+            Polygon arrowhead = new Polygon();
+            arrowhead.addPoint(intersection.x, intersection.y);
+            arrowhead.addPoint(x3, y3);
+            arrowhead.addPoint(x4, y4);
+            g2d.fill(arrowhead);
 
             g2d.dispose();
         }
-
     }
 
     public class AutomatonLayout {
