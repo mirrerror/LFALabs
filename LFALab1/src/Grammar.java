@@ -1,7 +1,4 @@
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Grammar {
@@ -23,11 +20,11 @@ public class Grammar {
 
         boolean containsNonTerminal = true;
 
-        while(containsNonTerminal) {
+        while (containsNonTerminal) {
             containsNonTerminal = false;
-            for(char entry : result.toCharArray()) {
+            for (char entry : result.toCharArray()) {
                 String entryString = String.valueOf(entry);
-                if(nonTerminalSymbols.contains(entryString)) {
+                if (nonTerminalSymbols.contains(entryString)) {
                     result = result.replaceFirst(entryString, getRandomProduction(entryString));
                     containsNonTerminal = true;
                 }
@@ -42,23 +39,33 @@ public class Grammar {
     }
 
     public FiniteAutomaton toFiniteAutomaton() {
-        return new FiniteAutomaton(nonTerminalSymbols, terminalSymbols, buildTransitions(productions), startingSymbol);
+        Map<String, Map<String, Set<String>>> transitions = buildTransitions();
+        Set<String> acceptStates = Collections.singleton("");
+
+        return new FiniteAutomaton(nonTerminalSymbols, terminalSymbols, transitions, startingSymbol, acceptStates);
     }
 
-    private Map<String, Map<String, String>> buildTransitions(Map<String, List<String>> productions) {
-        Map<String, Map<String, String>> transitions = new HashMap<>();
+    private Map<String, Map<String, Set<String>>> buildTransitions() {
+        Map<String, Map<String, Set<String>>> transitions = new HashMap<>();
 
         for (Map.Entry<String, List<String>> entry : productions.entrySet()) {
             String state = entry.getKey();
             List<String> productionList = entry.getValue();
 
-            Map<String, String> stateTransitions = new HashMap<>();
+            Map<String, Set<String>> stateTransitions = new HashMap<>();
 
             for (String production : productionList) {
                 String symbol = production.substring(0, 1); // Get the first character as the symbol
 
-                String nextState = production.length() > 1 ? production.substring(1) : "accept";
-                stateTransitions.put(symbol, nextState);
+                Set<String> nextStates = new HashSet<>();
+                if (production.length() > 1) {
+                    String nextState = production.substring(1);
+                    nextStates.add(nextState);
+                } else {
+                    nextStates.add("");
+                }
+
+                stateTransitions.put(symbol, nextStates);
             }
 
             transitions.put(state, stateTransitions);
@@ -67,4 +74,79 @@ public class Grammar {
         return transitions;
     }
 
+    public void defineChomskyType() {
+//        System.out.println("productions.values(): " + productions.values());
+//        System.out.println("productions.keys(): " + productions.keySet());
+        if (productions.keySet().stream().allMatch(s -> s.length() == 1 && countNonTerminals(s) == 1)
+                && productions.values().stream().allMatch(list -> list.stream().allMatch(l -> countTerminals(l) <= 1) && list.stream().allMatch(l -> countNonTerminals(l) <= 1))) {
+            System.out.println("The grammar is of type 3 (regular).");
+        } else if (productions.keySet().stream().allMatch(s -> s.length() == 1 && countNonTerminals(s) == 1)
+                && productions.values().stream().allMatch(list -> (list.stream().allMatch(l -> countTerminals(l) >= 0) && list.stream().allMatch(l -> countNonTerminals(l) >= 0)))) {
+            System.out.println("The grammar is of type 2 (context-free).");
+        } else if (productions.keySet().stream().anyMatch(s -> s.length() > 1 && countTerminals(s) > 0 && countNonTerminals(s) > 0)) {
+            System.out.println("The grammar is of type 0 (unrestricted).");
+        } else {
+            System.out.println("The grammar is of type 1 (context-sensitive).");
+        }
+    }
+
+    private int countTerminals(List<String> list) {
+        int count = 0;
+        for (String s : list) {
+            for (char c : s.toCharArray()) {
+                if (terminalSymbols.contains(String.valueOf(c))) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    private int countTerminals(String s) {
+        int count = 0;
+        for (char c : s.toCharArray()) {
+            if (terminalSymbols.contains(String.valueOf(c))) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private int countNonTerminals(List<String> list) {
+        int count = 0;
+        for (String s : list) {
+            for (char c : s.toCharArray()) {
+                if (nonTerminalSymbols.contains(String.valueOf(c))) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    private int countNonTerminals(String s) {
+        int count = 0;
+        for (char c : s.toCharArray()) {
+            if (nonTerminalSymbols.contains(String.valueOf(c))) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public Map<String, List<String>> getProductions() {
+        return productions;
+    }
+
+    public Set<String> getNonTerminalSymbols() {
+        return nonTerminalSymbols;
+    }
+
+    public Set<String> getTerminalSymbols() {
+        return terminalSymbols;
+    }
+
+    public String getStartingSymbol() {
+        return startingSymbol;
+    }
 }

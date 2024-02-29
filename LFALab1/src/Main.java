@@ -2,6 +2,12 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
+//        Scanner scanner = new Scanner(System.in);
+//        testFirstLab(scanner);
+        testSecondLab();
+    }
+
+    private static void testFirstLab(Scanner scanner) {
         String startingSymbol = "S";
         Set<String> nonTerminalSymbols = Set.of("S", "P", "Q");
         Set<String> terminalSymbols = Set.of("a", "b", "c", "d", "e", "f");
@@ -13,7 +19,6 @@ public class Main {
 
         Grammar grammar = new Grammar(startingSymbol, nonTerminalSymbols, terminalSymbols, productions);
         FiniteAutomaton finiteAutomaton = grammar.toFiniteAutomaton();
-        Scanner scanner = new Scanner(System.in);
 
         System.out.println("Generating 5 strings using the provided grammar:");
         for(int i = 1; i <= 5; i++) System.out.println(i + ". " + grammar.generateString());
@@ -22,4 +27,39 @@ public class Main {
         String input = scanner.nextLine();
         System.out.println("The string \"" + input + "\"" + (finiteAutomaton.stringBelongsToLanguage(input) ? " belongs " : " doesn't belong ") + "to the language.");
     }
+
+    private static void testSecondLab() {
+        FiniteAutomaton finiteAutomaton = new FiniteAutomaton(
+                Set.of("q0", "q1", "q2", "q3"),
+                Set.of("a", "c", "b"),
+                Map.of(
+                        "q0", Map.of("a", Set.of("q0", "q1")),
+                        "q1", Map.of("c", Set.of("q1"), "b", Set.of("q2")),
+                        "q2", Map.of("b", Set.of("q3")),
+                        "q3", Map.of("a", Set.of("q1"))
+                ),
+                "q0",
+                Set.of("q2")
+        );
+
+        finiteAutomaton.visualize();
+        Grammar grammar = finiteAutomaton.toGrammar();
+
+        System.out.println("The grammar was converted to a finite automaton and then back to a grammar. The resulting grammar productions are: " + grammar.getProductions());
+
+        grammar.defineChomskyType();
+
+        System.out.println("The provided finite automaton is " + (finiteAutomaton.isDeterministic() ? "deterministic" : "non-deterministic") + ".");
+    }
+
+//    private static void testSecondLab2() {
+//        String startingSymbol = "q0";
+//        Set<String> nonTerminalSymbols = Set.of("q0", "q1", "q2", "q3");
+//        Set<String> terminalSymbols = Set.of("a", "c", "b");
+//        Map<String, List<String>> productions = Map.of(
+//                "S", List.of("aP", "bQ"),
+//                "P", List.of("bP", "cP", "dQ", "e"),
+//                "Q", List.of("eQ", "fQ", "a")
+//        );
+//    }
 }
