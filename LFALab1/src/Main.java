@@ -42,7 +42,6 @@ public class Main {
                 Set.of("q2")
         );
 
-        finiteAutomaton.visualize();
         Grammar grammar = finiteAutomaton.toGrammar(true);
 
         System.out.println("The grammar was converted to a finite automaton and then back to a grammar. The resulting grammar productions are: " + grammar.getProductions());
@@ -50,5 +49,7 @@ public class Main {
         grammar.defineChomskyType();
 
         System.out.println("The provided finite automaton is " + (finiteAutomaton.isDeterministic() ? "deterministic" : "non-deterministic") + ".");
+
+        finiteAutomaton.visualize();
     }
 }
