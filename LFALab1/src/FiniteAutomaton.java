@@ -9,11 +9,11 @@ public class FiniteAutomaton {
     private final Set<String> acceptStates;
 
     public FiniteAutomaton(Set<String> states, Set<String> alphabet, Map<String, Map<String, Set<String>>> transitions, String startState, Set<String> acceptStates) {
-        this.states = states;
-        this.alphabet = alphabet;
-        this.transitions = transitions;
+        this.states = new HashSet<>(states);
+        this.alphabet = new HashSet<>(alphabet);
+        this.transitions = new HashMap<>(transitions);
         this.startState = startState;
-        this.acceptStates = acceptStates;
+        this.acceptStates = new HashSet<>(acceptStates);
     }
 
     public boolean stringBelongsToLanguage(String input) {
@@ -130,10 +130,51 @@ public class FiniteAutomaton {
         return true;
     }
 
-    public void convertToDeterministic() {
+    public FiniteAutomaton convertToDeterministic() {
         if (isDeterministic()) {
-            return;
+            return this;
         }
+
+        Set<String> newStates = new HashSet<>();
+        Map<String, Map<String, Set<String>>> newTransitions = new HashMap<>();
+        Set<String> newAcceptStates = new HashSet<>();
+
+        Queue<Set<String>> stateQueue = new LinkedList<>();
+        stateQueue.add(Set.of(startState));
+
+        while (!stateQueue.isEmpty()) {
+            Set<String> currentState = stateQueue.poll();
+            String stateName = String.join("", currentState);
+
+            if (newStates.contains(stateName)) {
+                continue;
+            }
+
+            newStates.add(stateName);
+
+            for (String state : currentState) {
+                if (acceptStates.contains(state)) {
+                    newAcceptStates.add(stateName);
+                    break;
+                }
+            }
+
+            Map<String, Set<String>> currentStateTransitions = new HashMap<>();
+
+            for (String symbol : alphabet) {
+               for (String state : currentState) {
+                   if (transitions.containsKey(state) && transitions.get(state).containsKey(symbol)) {
+                       Set<String> nextStates = transitions.get(state).get(symbol);
+                       currentStateTransitions.put(symbol, Set.of(String.join("", nextStates))); // does this work for general case? xd
+                       stateQueue.add(nextStates);
+                   }
+               }
+            }
+
+            newTransitions.put(stateName, currentStateTransitions);
+        }
+
+        return new FiniteAutomaton(newStates, alphabet, newTransitions, startState, newAcceptStates);
     }
 
     public void visualize(String title) {

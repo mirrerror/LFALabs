@@ -59,10 +59,10 @@ public class Main {
 
         finiteAutomaton.visualize("The initial finite automaton");
 
-        finiteAutomaton.convertToDeterministic();
+        FiniteAutomaton convertedAutomaton = finiteAutomaton.convertToDeterministic();
 
-        System.out.println("The finite automaton was converted to deterministic. The resulting transitions are: " + finiteAutomaton.getTransitions());
-        finiteAutomaton.visualize("The converted finite automaton");
+        System.out.println("The finite automaton was converted to deterministic. The resulting transitions are: " + convertedAutomaton.getTransitions());
+        convertedAutomaton.visualize("The converted finite automaton");
 
     }
 }
