@@ -2,8 +2,16 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-//        testFirstLab(new Scanner(System.in));
-        testSecondLab();
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter the lab number (1 or 2): ");
+        int labNumber = scanner.nextInt();
+
+        switch (labNumber) {
+            case 1 -> testFirstLab(new Scanner(System.in));
+            case 2 -> testSecondLab();
+            default -> System.out.println("Invalid lab number.");
+        }
     }
 
     private static void testFirstLab(Scanner scanner) {
