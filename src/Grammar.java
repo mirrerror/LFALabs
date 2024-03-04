@@ -102,6 +102,8 @@ public class Grammar {
         boolean atLeastOneAmbiguous = false;
 
         for(String s : productions.keySet()) {
+            if((atLeastOneLeftHanded && atLeastOneRightHanded) || atLeastOneAmbiguous)
+                break;
             List<String> entryList = productions.get(s);
             for(String entry : entryList) {
                 if(isLeftHanded(entry)) {
@@ -113,6 +115,8 @@ public class Grammar {
                 if(!isLeftHanded(entry) && !isRightHanded(entry)) {
                     atLeastOneAmbiguous = true;
                 }
+                if((atLeastOneLeftHanded && atLeastOneRightHanded) || atLeastOneAmbiguous)
+                    break;
             }
         }
 
