@@ -74,8 +74,51 @@ public class Grammar {
         return transitions;
     }
 
+    public static boolean isLeftHanded(String rule) {
+        // Check if the rule is in the form xY
+        if (rule.length() == 2) {
+            char firstChar = rule.charAt(0);
+            char secondChar = rule.charAt(1);
+
+            return Character.isLowerCase(firstChar) && Character.isUpperCase(secondChar);
+        }
+        return false;
+    }
+
+    public static boolean isRightHanded(String rule) {
+        // Check if the rule is in the form Yx
+        if (rule.length() == 2) {
+            char firstChar = rule.charAt(0);
+            char secondChar = rule.charAt(1);
+
+            return Character.isUpperCase(firstChar) && Character.isLowerCase(secondChar);
+        }
+        return false;
+    }
+
     public void defineChomskyType() {
-        if (productions.keySet().stream().allMatch(s -> s.length() == 1 && countNonTerminals(s) == 1)
+        boolean atLeastOneLeftHanded = false;
+        boolean atLeastOneRightHanded = false;
+        boolean atLeastOneAmbiguous = false;
+
+        for(String s : productions.keySet()) {
+            List<String> entryList = productions.get(s);
+            for(String entry : entryList) {
+                if(isLeftHanded(entry)) {
+                    atLeastOneLeftHanded = true;
+                }
+                if(isRightHanded(entry)) {
+                    atLeastOneRightHanded = true;
+                }
+                if(!isLeftHanded(entry) && !isRightHanded(entry)) {
+                    atLeastOneAmbiguous = true;
+                }
+            }
+        }
+
+
+        if (((atLeastOneLeftHanded && !atLeastOneRightHanded) || (!atLeastOneLeftHanded && atLeastOneRightHanded)) && !atLeastOneAmbiguous
+                && productions.keySet().stream().allMatch(s -> s.length() == 1 && countNonTerminals(s) == 1)
                 && productions.values().stream().allMatch(list -> list.stream().allMatch(l -> countTerminals(l) <= 1) && list.stream().allMatch(l -> countNonTerminals(l) <= 1))) {
             System.out.println("The grammar is of type 3 (regular).");
         } else if (productions.keySet().stream().allMatch(s -> s.length() == 1 && countNonTerminals(s) == 1)
