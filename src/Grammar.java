@@ -120,7 +120,6 @@ public class Grammar {
             }
         }
 
-
         if (((atLeastOneLeftHanded && !atLeastOneRightHanded) || (!atLeastOneLeftHanded && atLeastOneRightHanded)) && !atLeastOneAmbiguous
                 && productions.keySet().stream().allMatch(s -> s.length() == 1 && countNonTerminals(s) == 1)
                 && productions.values().stream().allMatch(list -> list.stream().allMatch(l -> countTerminals(l) <= 1) && list.stream().allMatch(l -> countNonTerminals(l) <= 1))) {

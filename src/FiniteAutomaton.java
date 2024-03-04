@@ -55,7 +55,7 @@ public class FiniteAutomaton {
         return false;
     }
 
-    public static String mapStateToNonTerminal(String state) {
+    public String mapStateToSymbol(String state) {
         int stateNumber;
 
         try {
@@ -94,7 +94,7 @@ public class FiniteAutomaton {
                 } else {
                     // Add a production for each next state
                     for (String nextState : nextStates) {
-                        productionList.add(symbol + ((mapStatesToNonTerminals) ? mapStateToNonTerminal(nextState) : nextState));
+                        productionList.add(symbol + ((mapStatesToNonTerminals) ? mapStateToSymbol(nextState) : nextState));
                     }
                 }
             }
@@ -103,7 +103,7 @@ public class FiniteAutomaton {
         if(mapStatesToNonTerminals) {
             Map<String, List<String>> newProductions = new HashMap<>();
             for (String state : productions.keySet()) {
-                newProductions.put(mapStateToNonTerminal(state), productions.get(state));
+                newProductions.put(mapStateToSymbol(state), productions.get(state));
             }
             return newProductions;
         }
@@ -112,7 +112,16 @@ public class FiniteAutomaton {
     }
 
     public Grammar toGrammar(boolean mapStatesToNonTerminals) {
-        return new Grammar(startState, states, alphabet, buildProductions(mapStatesToNonTerminals));
+        Set<String> newStates = new HashSet<>();
+        if(mapStatesToNonTerminals) {
+            for(String state : states) {
+                newStates.add(mapStateToSymbol(state));
+            }
+        } else {
+            newStates = new HashSet<>(states);
+        }
+
+        return new Grammar(startState, newStates, alphabet, buildProductions(mapStatesToNonTerminals));
     }
 
     public Grammar toGrammar() {
