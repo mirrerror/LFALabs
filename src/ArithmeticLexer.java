@@ -73,11 +73,13 @@ public class ArithmeticLexer {
         List<Token> tokens = new ArrayList<>();
         StringBuilder currentToken = new StringBuilder();
         int currentPosition = 0;
+        int leftParenCount = 0;
+        int rightParenCount = 0;
 
         for (char c : input.toCharArray()) {
-            currentPosition++;
             if (Character.isWhitespace(c)) {
                 if (ignoreWhitespace) {
+                    currentPosition++;
                     continue;
                 }
                 if (!currentToken.isEmpty()) {
@@ -86,6 +88,15 @@ public class ArithmeticLexer {
                 }
                 tokens.add(new Token(TokenType.WHITESPACE, Character.toString(c), currentPosition));
             } else if (isOperator(c)) {
+                if (requiresNumberBeforeAndAfter(c)) {
+                    if (!hasPreviousNumber(input, currentPosition)) {
+                        return invalidTokenError("Expected number before operator", currentPosition);
+                    }
+                    if (!hasNextNumber(input, currentPosition)) {
+                        return invalidTokenError("Expected number after operator", currentPosition);
+                    }
+                }
+
                 if (!currentToken.isEmpty()) {
                     tokens.add(createToken(currentToken.toString(), currentPosition - currentToken.length()));
                     currentToken.setLength(0);
@@ -99,15 +110,25 @@ public class ArithmeticLexer {
                     currentToken.setLength(0);
                 }
                 tokens.add(new Token(TokenType.LEFT_PAREN, Character.toString(c), currentPosition));
+                leftParenCount++;
             } else if (c == ')') {
                 if (!currentToken.isEmpty()) {
                     tokens.add(createToken(currentToken.toString(), currentPosition - currentToken.length()));
                     currentToken.setLength(0);
                 }
+                rightParenCount++;
+                if (rightParenCount > leftParenCount) {
+                    return invalidTokenError(Character.toString(c), currentPosition);
+                }
                 tokens.add(new Token(TokenType.RIGHT_PAREN, Character.toString(c), currentPosition));
             } else {
                 return invalidTokenError(Character.toString(c), currentPosition);
             }
+            currentPosition++;
+        }
+
+        if (leftParenCount != rightParenCount) {
+            return invalidTokenError("Mismatched parentheses", input.length());
         }
 
         if (!currentToken.isEmpty()) {
@@ -119,7 +140,7 @@ public class ArithmeticLexer {
 
     private List<Token> invalidTokenError(String token, int position) {
         List<Token> errorTokens = new ArrayList<>();
-        errorTokens.add(new Token(TokenType.ERROR, "Invalid character: '" + token + "' at position " + position + ".", position));
+        errorTokens.add(new Token(TokenType.ERROR, "Invalid expression: " + token + " at position " + position + ".", position));
         return errorTokens;
     }
 
@@ -127,11 +148,37 @@ public class ArithmeticLexer {
         if (tokenString.matches("\\d+")) {
             return new Token(TokenType.NUMBER, tokenString, position);
         } else {
-            return new Token(TokenType.ERROR, "Invalid token: " + tokenString, position);
+            return new Token(TokenType.ERROR, "Invalid expression: " + tokenString + " at position " + position + ".", position);
         }
     }
 
     private static boolean isOperator(char c) {
         return c == '+' || c == '-' || c == '*' || c == '/';
+    }
+
+    private static boolean requiresNumberBeforeAndAfter(char c) {
+        return isOperator(c);
+    }
+
+    private boolean hasNextNumber(String input, int currentPosition) {
+        for (int i = currentPosition + 1; i < input.length(); i++) {
+            if (Character.isDigit(input.charAt(i))) {
+                return true;
+            } else if (!Character.isWhitespace(input.charAt(i))) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasPreviousNumber(String input, int currentPosition) {
+        for (int i = currentPosition - 1; i >= 0; i--) {
+            if (Character.isDigit(input.charAt(i))) {
+                return true;
+            } else if (!Character.isWhitespace(input.charAt(i))) {
+                return false;
+            }
+        }
+        return false;
     }
 }

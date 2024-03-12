@@ -13,7 +13,7 @@ public class Main {
             case 1 -> testFirstLab(labScanner);
             case 2 -> testSecondLab();
             case 3 -> testThirdLab(labScanner);
-            default -> System.out.println("Invalid lab number.");
+            default -> System.err.println("Invalid lab number.");
         }
     }
 
@@ -76,7 +76,7 @@ public class Main {
         String ignoreWhitespace = scanner.nextLine();
 
         while (!ignoreWhitespace.equalsIgnoreCase("y") && !ignoreWhitespace.equalsIgnoreCase("n")) {
-            System.out.print("Invalid input. Please enter 'y' or 'n': ");
+            System.err.print("Invalid input. Please enter 'y' or 'n': ");
             ignoreWhitespace = scanner.nextLine();
         }
 
@@ -90,7 +90,7 @@ public class Main {
         for (ArithmeticLexer.Token token : tokens) {
             if (token.getType() == ArithmeticLexer.TokenType.ERROR) {
                 containsError = true;
-                System.out.println(token.getValue());
+                System.err.println(token.getValue());
                 return;
             }
             answer.add(token.toString());
