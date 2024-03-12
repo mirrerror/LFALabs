@@ -75,6 +75,7 @@ public class ArithmeticLexer {
         int currentPosition = 0;
         int leftParenCount = 0;
         int rightParenCount = 0;
+        int lastDigitStartingPosition = 0;
 
         for (char c : input.toCharArray()) {
             if (Character.isWhitespace(c)) {
@@ -82,10 +83,7 @@ public class ArithmeticLexer {
                     currentPosition++;
                     continue;
                 }
-                if (!currentToken.isEmpty()) {
-                    tokens.add(createToken(currentToken.toString(), currentPosition - currentToken.length()));
-                    currentToken.setLength(0);
-                }
+                addNumberIfNeeded(currentToken, tokens, lastDigitStartingPosition);
                 tokens.add(new Token(TokenType.WHITESPACE, Character.toString(c), currentPosition));
             } else if (isOperator(c)) {
                 if (requiresNumberBeforeAndAfter(c)) {
@@ -97,25 +95,19 @@ public class ArithmeticLexer {
                     }
                 }
 
-                if (!currentToken.isEmpty()) {
-                    tokens.add(createToken(currentToken.toString(), currentPosition - currentToken.length()));
-                    currentToken.setLength(0);
-                }
+                addNumberIfNeeded(currentToken, tokens, lastDigitStartingPosition);
                 tokens.add(new Token(TokenType.OPERATOR, Character.toString(c), currentPosition));
             } else if (Character.isDigit(c)) {
+                if(currentToken.isEmpty()) {
+                    lastDigitStartingPosition = currentPosition;
+                }
                 currentToken.append(c);
             } else if (c == '(') {
-                if (!currentToken.isEmpty()) {
-                    tokens.add(createToken(currentToken.toString(), currentPosition - currentToken.length()));
-                    currentToken.setLength(0);
-                }
+                addNumberIfNeeded(currentToken, tokens, lastDigitStartingPosition);
                 tokens.add(new Token(TokenType.LEFT_PAREN, Character.toString(c), currentPosition));
                 leftParenCount++;
             } else if (c == ')') {
-                if (!currentToken.isEmpty()) {
-                    tokens.add(createToken(currentToken.toString(), currentPosition - currentToken.length()));
-                    currentToken.setLength(0);
-                }
+                addNumberIfNeeded(currentToken, tokens, lastDigitStartingPosition);
                 rightParenCount++;
                 if (rightParenCount > leftParenCount) {
                     return invalidTokenError(Character.toString(c), currentPosition);
@@ -131,9 +123,7 @@ public class ArithmeticLexer {
             return invalidTokenError("Mismatched parentheses", input.length());
         }
 
-        if (!currentToken.isEmpty()) {
-            tokens.add(createToken(currentToken.toString(), currentPosition - currentToken.length()));
-        }
+        addNumberIfNeeded(currentToken, tokens, lastDigitStartingPosition);
 
         return tokens;
     }
@@ -180,5 +170,12 @@ public class ArithmeticLexer {
             }
         }
         return false;
+    }
+
+    private void addNumberIfNeeded(StringBuilder currentToken, List<Token> tokens, int lastDigitStartingPosition) {
+        if (!currentToken.isEmpty()) {
+            tokens.add(createToken(currentToken.toString(), lastDigitStartingPosition));
+            currentToken.setLength(0);
+        }
     }
 }
