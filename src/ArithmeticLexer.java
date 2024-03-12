@@ -87,11 +87,11 @@ public class ArithmeticLexer {
                 tokens.add(new Token(TokenType.WHITESPACE, Character.toString(c), currentPosition));
             } else if (isOperator(c)) {
                 if (requiresNumberBeforeAndAfter(c)) {
-                    if (!hasPreviousNumber(input, currentPosition)) {
-                        return invalidTokenError("Expected number before operator", currentPosition);
+                    if (!hasPreviousNumber(input, currentPosition) && !hasPreviousBracket(input, currentPosition)) {
+                        return invalidTokenError("Expected number or bracket before operator", currentPosition);
                     }
-                    if (!hasNextNumber(input, currentPosition)) {
-                        return invalidTokenError("Expected number after operator", currentPosition);
+                    if (!hasNextNumber(input, currentPosition) && !hasNextBracket(input, currentPosition)) {
+                        return invalidTokenError("Expected number or bracket after operator", currentPosition);
                     }
                 }
 
@@ -161,9 +161,31 @@ public class ArithmeticLexer {
         return false;
     }
 
+    private boolean hasNextBracket(String input, int currentPosition) {
+        for (int i = currentPosition + 1; i < input.length(); i++) {
+            if (input.charAt(i) == '(') {
+                return true;
+            } else if (!Character.isWhitespace(input.charAt(i))) {
+                return false;
+            }
+        }
+        return false;
+    }
+
     private boolean hasPreviousNumber(String input, int currentPosition) {
         for (int i = currentPosition - 1; i >= 0; i--) {
             if (Character.isDigit(input.charAt(i))) {
+                return true;
+            } else if (!Character.isWhitespace(input.charAt(i))) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasPreviousBracket(String input, int currentPosition) {
+        for (int i = currentPosition - 1; i >= 0; i--) {
+            if (input.charAt(i) == ')') {
                 return true;
             } else if (!Character.isWhitespace(input.charAt(i))) {
                 return false;
