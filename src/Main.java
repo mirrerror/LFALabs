@@ -4,12 +4,15 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.print("Enter the lab number (from 1 to 2): ");
+        System.out.print("Enter the lab number (from 1 to 3): ");
         int labNumber = scanner.nextInt();
 
+        Scanner labScanner = new Scanner(System.in);
+
         switch (labNumber) {
-            case 1 -> testFirstLab(new Scanner(System.in));
+            case 1 -> testFirstLab(labScanner);
             case 2 -> testSecondLab();
+            case 3 -> testThirdLab(labScanner);
             default -> System.out.println("Invalid lab number.");
         }
     }
@@ -63,5 +66,43 @@ public class Main {
 
         System.out.println("The finite automaton was converted to deterministic. The resulting transitions are: " + convertedAutomaton.getTransitions());
         convertedAutomaton.visualize("The converted finite automaton");
+    }
+    private static void testThirdLab(Scanner scanner) {
+        ArithmeticLexer arithmeticLexer = new ArithmeticLexer();
+
+        System.out.print("Enter an arithmetic expression: ");
+        String input = scanner.nextLine();
+        System.out.print("Should whitespaces be ignored? (y/n): ");
+        String ignoreWhitespace = scanner.nextLine();
+
+        while (!ignoreWhitespace.equalsIgnoreCase("y") && !ignoreWhitespace.equalsIgnoreCase("n")) {
+            System.out.print("Invalid input. Please enter 'y' or 'n': ");
+            ignoreWhitespace = scanner.nextLine();
+        }
+
+        arithmeticLexer.setIgnoreWhitespace(ignoreWhitespace.equals("y"));
+
+        List<ArithmeticLexer.Token> tokens = arithmeticLexer.tokenize(input);
+
+        List<String> answer = new ArrayList<>();
+        boolean containsError = false;
+
+        for (ArithmeticLexer.Token token : tokens) {
+            if (token.type == ArithmeticLexer.TokenType.ERROR) {
+                containsError = true;
+                System.out.println(token.value);
+                return;
+            }
+            answer.add(token.toString());
+        }
+
+        if(answer.isEmpty())
+            System.out.println("No tokens were found.");
+
+        if(!containsError) {
+            System.out.println("The tokens are: ");
+            for (String token : answer)
+                System.out.println(token);
+        }
     }
 }
