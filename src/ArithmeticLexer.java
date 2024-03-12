@@ -17,7 +17,7 @@ public class ArithmeticLexer {
         private String value;
         private int position;
 
-        Token(TokenType type, String value, int position) {
+        public Token(TokenType type, String value, int position) {
             this.type = type;
             this.value = value;
             this.position = position;
