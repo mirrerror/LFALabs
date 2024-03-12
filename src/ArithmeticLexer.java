@@ -3,7 +3,7 @@ import java.util.List;
 
 public class ArithmeticLexer {
 
-    enum TokenType {
+    public enum TokenType {
         NUMBER,
         OPERATOR,
         LEFT_PAREN,
@@ -13,13 +13,37 @@ public class ArithmeticLexer {
     }
 
     public static class Token {
-        TokenType type;
-        String value;
-        int position;
+        private TokenType type;
+        private String value;
+        private int position;
 
         Token(TokenType type, String value, int position) {
             this.type = type;
             this.value = value;
+            this.position = position;
+        }
+
+        public TokenType getType() {
+            return type;
+        }
+
+        public void setType(TokenType type) {
+            this.type = type;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public int getPosition() {
+            return position;
+        }
+
+        public void setPosition(int position) {
             this.position = position;
         }
 

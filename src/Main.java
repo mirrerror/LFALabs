@@ -88,9 +88,9 @@ public class Main {
         boolean containsError = false;
 
         for (ArithmeticLexer.Token token : tokens) {
-            if (token.type == ArithmeticLexer.TokenType.ERROR) {
+            if (token.getType() == ArithmeticLexer.TokenType.ERROR) {
                 containsError = true;
-                System.out.println(token.value);
+                System.out.println(token.getValue());
                 return;
             }
             answer.add(token.toString());
