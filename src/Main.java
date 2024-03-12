@@ -80,7 +80,7 @@ public class Main {
             ignoreWhitespace = scanner.nextLine();
         }
 
-        arithmeticLexer.setIgnoreWhitespace(ignoreWhitespace.equals("y"));
+        arithmeticLexer.setIgnoreWhitespace(ignoreWhitespace.equalsIgnoreCase("y"));
 
         List<ArithmeticLexer.Token> tokens = arithmeticLexer.tokenize(input);
 
