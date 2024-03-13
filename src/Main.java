@@ -85,21 +85,18 @@ public class Main {
         List<ArithmeticLexer.Token> tokens = arithmeticLexer.tokenize(input);
 
         List<String> answer = new ArrayList<>();
-        boolean containsError = false;
 
         for (ArithmeticLexer.Token token : tokens) {
             if (token.getType() == ArithmeticLexer.TokenType.ERROR) {
-                containsError = true;
                 System.err.println(token.getValue());
                 return;
             }
             answer.add(token.toString());
         }
 
-        if(answer.isEmpty())
+        if (answer.isEmpty()) {
             System.out.println("No tokens were found.");
-
-        if(!containsError) {
+        } else {
             System.out.println("The tokens are: ");
             for (String token : answer)
                 System.out.println(token);
