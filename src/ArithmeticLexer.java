@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 // This class is responsible for lexing arithmetic expressions, breaking them down into tokens.
 public class ArithmeticLexer {
@@ -248,5 +249,77 @@ public class ArithmeticLexer {
             tokens.add(createToken(currentToken.toString(), lastDigitStartingPosition));
             currentToken.setLength(0); // Clear the current token StringBuilder.
         }
+    }
+
+    // Method to evaluate the arithmetic expression.
+    public int evaluate(List<Token> tokens) {
+        Stack<Integer> operandStack = new Stack<>();  // Stack to store operands.
+        Stack<Character> operatorStack = new Stack<>();  // Stack to store operators.
+
+        for (Token token : tokens) {
+            switch (token.getType()) {
+                case NUMBER:
+                    operandStack.push(Integer.parseInt(token.getValue()));
+                    break;
+                case OPERATOR:
+                    while (!operatorStack.isEmpty() && precedence(operatorStack.peek()) >= precedence(token.getValue().charAt(0))) {
+                        evaluateTop(operandStack, operatorStack);
+                    }
+                    operatorStack.push(token.getValue().charAt(0));
+                    break;
+                case LEFT_PAREN:
+                    operatorStack.push('(');
+                    break;
+                case RIGHT_PAREN:
+                    while (operatorStack.peek() != '(') {
+                        evaluateTop(operandStack, operatorStack);
+                    }
+                    operatorStack.pop(); // Pop the '('
+                    break;
+                default:
+                    // Do nothing for other token types.
+                    break;
+            }
+        }
+
+        while (!operatorStack.isEmpty()) {
+            evaluateTop(operandStack, operatorStack);
+        }
+
+        return operandStack.pop(); // Result will be on top of the operand stack.
+    }
+
+    // Method to evaluate the top of the stacks.
+    private void evaluateTop(Stack<Integer> operandStack, Stack<Character> operatorStack) {
+        char operator = operatorStack.pop();
+        int operand2 = operandStack.pop();
+        int operand1 = operandStack.pop();
+        int result = performOperation(operand1, operand2, operator);
+        operandStack.push(result);
+    }
+
+    // Method to perform arithmetic operation.
+    private int performOperation(int operand1, int operand2, char operator) {
+        return switch (operator) {
+            case '+' -> operand1 + operand2;
+            case '-' -> operand1 - operand2;
+            case '*' -> operand1 * operand2;
+            case '/' -> {
+                if (operand2 == 0) {
+                    throw new ArithmeticException("Division by zero");
+                }
+                yield operand1 / operand2;
+            }
+            default -> throw new IllegalArgumentException("Invalid operator");
+        };
+    }
+
+    // Method to get precedence of operators.
+    private int precedence(char operator) {
+        return switch (operator) {
+            case '+', '-' -> 1;
+            case '*', '/' -> 2;
+            default -> 0;
+        };
     }
 }

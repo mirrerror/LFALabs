@@ -100,6 +100,7 @@ public class Main {
             System.out.println("The tokens are: ");
             for (String token : answer)
                 System.out.println(token);
+            System.out.println("Result: " + arithmeticLexer.evaluate(tokens));
         }
     }
 }
