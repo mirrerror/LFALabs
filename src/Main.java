@@ -98,8 +98,11 @@ public class Main {
             System.out.println("No tokens were found.");
         } else {
             System.out.println("The tokens are: ");
-            for (String token : answer)
-                System.out.println(token);
+            int i = 1;
+            for (String token : answer) {
+                System.out.println(i + ". " + token);
+                i++;
+            }
             System.out.println("Result: " + arithmeticLexer.evaluate(tokens));
         }
     }
