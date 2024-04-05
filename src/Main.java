@@ -4,7 +4,7 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.print("Enter the lab number (from 1 to 3): ");
+        System.out.print("Enter the lab number (from 1 to 5): ");
         int labNumber = scanner.nextInt();
 
         Scanner labScanner = new Scanner(System.in);
@@ -13,6 +13,8 @@ public class Main {
             case 1 -> testFirstLab(labScanner);
             case 2 -> testSecondLab();
             case 3 -> testThirdLab(labScanner);
+            case 4 -> testFourthLab();
+            case 5 -> testFifthLab();
             default -> System.err.println("Invalid lab number.");
         }
     }
@@ -105,5 +107,30 @@ public class Main {
             }
             System.out.println("Result: " + arithmeticLexer.evaluate(tokens));
         }
+    }
+
+    private static void testFourthLab() {
+        System.out.println("I used my right to skip this lab, because I had three bonus points.");
+    }
+
+    private static void testFifthLab() {
+        String startingSymbol = "S";
+        Set<String> nonTerminalSymbols = Set.of("S", "A", "B", "C", "D", "E");
+        Set<String> terminalSymbols = Set.of("a", "b");
+        Map<String, List<String>> productions = Map.of(
+                "S", List.of("aB", "AC"),
+                "A", List.of("a", "ASC", "BC", "aD"),
+                "B", List.of("b", "bS"),
+                "C", List.of("", "BA"),
+                "D", List.of("abC"),
+                "E", List.of("aB")
+        );
+
+        Grammar grammar = new Grammar(startingSymbol, nonTerminalSymbols, terminalSymbols, productions);
+
+        grammar.normalizeToChomskyForm();
+
+        System.out.println("The initial grammar productions are: " + productions);
+        System.out.println("The grammar was normalized to the Chomsky form. The resulting grammar productions are: " + grammar.getProductions());
     }
 }

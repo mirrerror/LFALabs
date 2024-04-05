@@ -6,13 +6,14 @@ public class Grammar {
     private final String startingSymbol;
     private final Set<String> nonTerminalSymbols;
     private final Set<String> terminalSymbols;
-    private final Map<String, List<String>> productions;
+    private Map<String, List<String>> productions;
 
     public Grammar(String startingSymbol, Set<String> nonTerminals, Set<String> terminals, Map<String, List<String>> productions) {
         this.startingSymbol = startingSymbol;
         this.nonTerminalSymbols = new HashSet<>(nonTerminals);
         this.terminalSymbols = new HashSet<>(terminals);
-        this.productions = new HashMap<>(productions);
+        this.productions = new HashMap<>();
+        productions.forEach((key, value) -> this.productions.put(key, new ArrayList<>(value)));
     }
 
     public String generateString() {
@@ -176,6 +177,232 @@ public class Grammar {
             }
         }
         return count;
+    }
+
+    public void eliminateEpsilonProductions() {
+        Set<String> epsilonSymbols = findSymbolsWithEpsilonProductions();
+
+        Map<String, List<String>> newProductions = new HashMap<>();
+
+        for(Map.Entry<String, List<String>> entry : productions.entrySet()) {
+            String nonTerminal = entry.getKey();
+            List<String> productionsList = entry.getValue();
+            List<String> newProductionsList = new ArrayList<>();
+
+            for(String production : productionsList) {
+                if(production.isEmpty()) {
+                    continue;
+                }
+
+                boolean added = false;
+                for(String nullableSymbol : epsilonSymbols) {
+                    int count = production.length() - production.replace(nullableSymbol, "").length();
+                    if(count == 0 && !added) {
+                        newProductionsList.add(production);
+                        added = true;
+                    } else {
+                        String newProduction = production;
+                        for(int i = 0; i < count; i++) {
+                            newProduction = newProduction.replaceFirst(nullableSymbol, "");
+                            if(!added) newProductionsList.add(production);
+                            newProductionsList.add(newProduction);
+                            added = true;
+                        }
+                    }
+                }
+            }
+
+            newProductions.put(nonTerminal, newProductionsList);
+        }
+
+        this.productions = newProductions;
+
+        System.out.println("Productions after eliminating epsilon productions: " + productions);
+    }
+
+    public Set<String> findSymbolsWithEpsilonProductions() {
+        Set<String> epsilonSymbols = new HashSet<>();
+        for(Map.Entry<String, List<String>> entry : productions.entrySet()) {
+            String nonTerminal = entry.getKey();
+            List<String> productionsList = entry.getValue();
+            if(productionsList.contains("")) {
+                epsilonSymbols.add(nonTerminal);
+            }
+        }
+        return epsilonSymbols;
+    }
+
+//    public Set<String> findNullableSymbols() {
+//        Set<String> nullable = new HashSet<>();
+//
+//        for(Map.Entry<String, List<String>> entry : productions.entrySet()) {
+//            String nonTerminal = entry.getKey();
+//            List<String> productionsList = entry.getValue();
+//
+//            if(productionsList.contains("")) {
+//                nullable.add(nonTerminal);
+//            }
+//        }
+//
+//        for(Map.Entry<String, List<String>> entry : productions.entrySet()) {
+//            String nonTerminal = entry.getKey();
+//            List<String> productionsList = entry.getValue();
+//
+//            for(String production : productionsList) {
+//                boolean isNullable = false;
+//                for(char c : production.toCharArray()) {
+//                    if(nullable.contains(String.valueOf(c))) {
+//                        isNullable = true;
+//                        break;
+//                    }
+//                }
+//                if(isNullable) {
+//                    nullable.add(nonTerminal);
+//                    break;
+//                }
+//            }
+//        }
+//
+//        return nullable;
+//    }
+
+    public void eliminateRenamingProductions() {
+        Map<String, List<String>> newProductions = new HashMap<>(productions);
+
+        while (countRenamingProductions(newProductions) > 0) {
+
+            for (Map.Entry<String, List<String>> entry : newProductions.entrySet()) {
+                String nonTerminal = entry.getKey();
+                List<String> productionsList = entry.getValue();
+                List<String> newProductionsList = new ArrayList<>();
+
+                for (String production : productionsList) {
+                    if (production.length() == 1 && Character.isUpperCase(production.charAt(0))) {
+                        newProductionsList.addAll(productions.getOrDefault(production, Collections.emptyList()));
+                    } else {
+                        newProductionsList.add(production);
+                    }
+                }
+
+                newProductions.put(nonTerminal, newProductionsList);
+            }
+
+        }
+
+        this.productions = newProductions;
+
+        System.out.println("Productions after eliminating renaming productions: " + productions);
+    }
+
+    private int countRenamingProductions(Map<String, List<String>> productions) {
+        int count = 0;
+        for(Map.Entry<String, List<String>> entry : productions.entrySet()) {
+            List<String> productionsList = entry.getValue();
+            for(String production : productionsList) {
+                if(production.length() == 1 && Character.isUpperCase(production.charAt(0))) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    public void eliminateInaccessibleSymbols() {
+        Set<String> reachableSymbols = findReachableSymbols();
+        productions.keySet().retainAll(reachableSymbols);
+        nonTerminalSymbols.retainAll(reachableSymbols);
+        System.out.println("Productions after eliminating inaccessible symbols: " + productions);
+    }
+
+    public Set<String> findReachableSymbols() {
+        Map<String, Integer> reaches = new HashMap<>();
+        reaches.put(startingSymbol, 1);
+
+        for (Map.Entry<String, List<String>> entry : productions.entrySet()) {
+            for(String production : entry.getValue()) {
+                for(char c : production.toCharArray()) {
+                    if(Character.isUpperCase(c)) {
+                        reaches.put(String.valueOf(c), reaches.getOrDefault(String.valueOf(c), 0) + 1);
+                    }
+                }
+            }
+        }
+
+        Set<String> reachable = new HashSet<>();
+
+        for (Map.Entry<String, Integer> entry : reaches.entrySet()) {
+            if(entry.getValue() > 0) {
+                reachable.add(entry.getKey());
+            }
+        }
+
+        return reachable;
+    }
+
+    public void eliminateNonProductiveSymbols() {
+        Set<String> productiveSymbols = findProductiveSymbols();
+        productions.keySet().retainAll(productiveSymbols);
+        nonTerminalSymbols.retainAll(productiveSymbols);
+        System.out.println("Productions after eliminating non-productive symbols: " + productions);
+    }
+
+    public Set<String> findProductiveSymbols() {
+        Set<String> productiveSymbols = new HashSet<>();
+        Set<String> reachableSymbols = findReachableSymbols();
+
+        // Iterate through productions to find productive symbols
+        for (Map.Entry<String, List<String>> entry : productions.entrySet()) {
+            String nonTerminal = entry.getKey();
+            List<String> productionsList = entry.getValue();
+
+            // Check if the non-terminal symbol is reachable
+            if (reachableSymbols.contains(nonTerminal)) {
+                for (String production : productionsList) {
+                    // Check if the production contains only terminal symbols or reachable non-terminal symbols
+                    boolean isProductive = true;
+                    for (char c : production.toCharArray()) {
+                        if (Character.isUpperCase(c) && !reachableSymbols.contains(String.valueOf(c))) {
+                            isProductive = false;
+                            break;
+                        }
+                    }
+                    if (isProductive) {
+                        productiveSymbols.add(nonTerminal);
+                        break; // If one production is found productive, break the loop
+                    }
+                }
+            }
+        }
+        return productiveSymbols;
+    }
+
+    public void normalizeToChomskyForm() {
+        eliminateEpsilonProductions();
+        eliminateRenamingProductions();
+        eliminateInaccessibleSymbols();
+        eliminateNonProductiveSymbols();
+        convertToChomskyForm();
+    }
+
+    public void convertToChomskyForm() {
+        for(Map.Entry<String, List<String>> entry : new HashMap<>(productions).entrySet()) {
+            boolean found = false;
+            List<String> productionsList = entry.getValue();
+
+            for(String production : productionsList) {
+                for(char c : production.toCharArray()) {
+                    if(startingSymbol.equals(String.valueOf(c))) {
+                        productions.put(startingSymbol + "'", new ArrayList<>(List.of(startingSymbol)));
+                        found = true;
+                        break;
+                    }
+                }
+                if(found) break;
+            }
+            if(found) break;
+        }
+
+        // TODO: finish this
     }
 
     public Map<String, List<String>> getProductions() {
