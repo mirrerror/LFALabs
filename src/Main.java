@@ -21,15 +21,13 @@ public class Main {
 
     private static void testFirstLab(Scanner scanner) {
         String startingSymbol = "S";
-        Set<String> nonTerminalSymbols = Set.of("S", "P", "Q");
-        Set<String> terminalSymbols = Set.of("a", "b", "c", "d", "e", "f");
         Map<String, List<String>> productions = Map.of(
                 "S", List.of("aP", "bQ"),
                 "P", List.of("bP", "cP", "dQ", "e"),
                 "Q", List.of("eQ", "fQ", "a")
         );
 
-        Grammar grammar = new Grammar(startingSymbol, nonTerminalSymbols, terminalSymbols, productions);
+        Grammar grammar = new Grammar(startingSymbol, productions);
         FiniteAutomaton finiteAutomaton = grammar.toFiniteAutomaton();
 
         System.out.println("Generating 5 strings using the provided grammar:");
@@ -115,8 +113,6 @@ public class Main {
 
     private static void testFifthLab() {
         String startingSymbol = "S";
-        Set<String> nonTerminalSymbols = Set.of("S", "A", "B", "C", "D", "E");
-        Set<String> terminalSymbols = Set.of("a", "b");
         Map<String, List<String>> productions = Map.of(
                 "S", List.of("aB", "AC"),
                 "A", List.of("a", "ASC", "BC", "aD"),
@@ -126,7 +122,7 @@ public class Main {
                 "E", List.of("aB")
         );
 
-        Grammar grammar = new Grammar(startingSymbol, nonTerminalSymbols, terminalSymbols, productions);
+        Grammar grammar = new Grammar(startingSymbol, productions);
 
         grammar.normalizeToChomskyForm();
 

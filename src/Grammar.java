@@ -8,12 +8,13 @@ public class Grammar {
     private final Set<String> terminalSymbols;
     private Map<String, List<String>> productions;
 
-    public Grammar(String startingSymbol, Set<String> nonTerminals, Set<String> terminals, Map<String, List<String>> productions) {
+    public Grammar(String startingSymbol, Map<String, List<String>> productions) {
         this.startingSymbol = startingSymbol;
-        this.nonTerminalSymbols = new HashSet<>(nonTerminals);
-        this.terminalSymbols = new HashSet<>(terminals);
+        this.nonTerminalSymbols = new HashSet<>();
+        this.terminalSymbols = new HashSet<>();
         this.productions = new HashMap<>();
         productions.forEach((key, value) -> this.productions.put(key, new ArrayList<>(value)));
+        determineTerminalsAndNonTerminals();
     }
 
     public String generateString() {
@@ -216,6 +217,7 @@ public class Grammar {
         }
 
         this.productions = newProductions;
+        determineTerminalsAndNonTerminals();
     }
 
     public Set<String> findSymbolsWithEpsilonProductions() {
@@ -254,6 +256,7 @@ public class Grammar {
         }
 
         this.productions = newProductions;
+        determineTerminalsAndNonTerminals();
     }
 
     private int countRenamingProductions(Map<String, List<String>> productions) {
@@ -272,7 +275,7 @@ public class Grammar {
     public void eliminateInaccessibleSymbols() {
         Set<String> reachableSymbols = findReachableSymbols();
         productions.keySet().retainAll(reachableSymbols);
-        nonTerminalSymbols.retainAll(reachableSymbols);
+        determineTerminalsAndNonTerminals();
     }
 
     public Set<String> findReachableSymbols() {
@@ -303,7 +306,7 @@ public class Grammar {
     public void eliminateNonProductiveSymbols() {
         Set<String> productiveSymbols = findProductiveSymbols();
         productions.keySet().retainAll(productiveSymbols);
-        nonTerminalSymbols.retainAll(productiveSymbols);
+        determineTerminalsAndNonTerminals();
     }
 
     public Set<String> findProductiveSymbols() {
@@ -360,6 +363,7 @@ public class Grammar {
         }
 
         setupVariables();
+        determineTerminalsAndNonTerminals();
     }
 
     private void setupVariables() {
@@ -426,6 +430,40 @@ public class Grammar {
         String newNonTerminal = "X" + index;
         newNonTerminals.put(newNonTerminal, symbols);
         return newNonTerminal;
+    }
+
+    private void determineTerminalsAndNonTerminals() {
+        determineNonTerminals();
+        determineTerminals();
+    }
+
+    private void determineNonTerminals() {
+        nonTerminalSymbols.clear();
+        for (String nonTerminal : productions.keySet()) {
+            nonTerminalSymbols.add(nonTerminal);
+            List<String> productionList = productions.get(nonTerminal);
+            for (String production : productionList) {
+                for (char c : production.toCharArray()) {
+                    if (Character.isUpperCase(c)) {
+                        nonTerminalSymbols.add(String.valueOf(c));
+                    }
+                }
+            }
+        }
+    }
+
+    private void determineTerminals() {
+        terminalSymbols.clear();
+        for (String nonTerminal : productions.keySet()) {
+            List<String> productionList = productions.get(nonTerminal);
+            for (String production : productionList) {
+                for (char c : production.toCharArray()) {
+                    if (Character.isLowerCase(c)) {
+                        terminalSymbols.add(String.valueOf(c));
+                    }
+                }
+            }
+        }
     }
 
     public Map<String, List<String>> getProductions() {
