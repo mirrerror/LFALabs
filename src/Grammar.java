@@ -230,40 +230,6 @@ public class Grammar {
         return epsilonSymbols;
     }
 
-//    public Set<String> findNullableSymbols() {
-//        Set<String> nullable = new HashSet<>();
-//
-//        for(Map.Entry<String, List<String>> entry : productions.entrySet()) {
-//            String nonTerminal = entry.getKey();
-//            List<String> productionsList = entry.getValue();
-//
-//            if(productionsList.contains("")) {
-//                nullable.add(nonTerminal);
-//            }
-//        }
-//
-//        for(Map.Entry<String, List<String>> entry : productions.entrySet()) {
-//            String nonTerminal = entry.getKey();
-//            List<String> productionsList = entry.getValue();
-//
-//            for(String production : productionsList) {
-//                boolean isNullable = false;
-//                for(char c : production.toCharArray()) {
-//                    if(nullable.contains(String.valueOf(c))) {
-//                        isNullable = true;
-//                        break;
-//                    }
-//                }
-//                if(isNullable) {
-//                    nullable.add(nonTerminal);
-//                    break;
-//                }
-//            }
-//        }
-//
-//        return nullable;
-//    }
-
     public void eliminateRenamingProductions() {
         Map<String, List<String>> newProductions = new HashMap<>(productions);
 
@@ -393,182 +359,73 @@ public class Grammar {
             if(found) break;
         }
 
-        this.productions = addVariableConditions();
+        setupVariables();
     }
 
-    private Map<String, List<String>> addVariableConditions() {
-        int currentIndex = 0;
-        Map<String, List<String>> newProductions = new HashMap<>();
-        Set<String> addedVariables = new HashSet<>();
+    private void setupVariables() {
+        Map<String, String> terminalNonTerminals = new HashMap<>();
+        Map<String, String> newNonTerminals = new HashMap<>();
+        Map<String, String> nonTerminalMapping = new HashMap<>();
+        Map<String, List<String>> newProductions = new HashMap<>(productions);
+        int index = 0;
 
-        for (Map.Entry<String, List<String>> entry : productions.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : newProductions.entrySet()) {
+            String fromState = entry.getKey();
+            List<String> toStates = entry.getValue();
+            List<String> newToStates = new ArrayList<>();
+            for (String production : toStates) {
+                if (production.length() > 2) {
+                    String newNonTerminal = nonTerminalMapping.get(production);
+                    if (newNonTerminal == null) {
+                        newNonTerminal = generateNewVariable(newNonTerminals, index++, production);
+                        newNonTerminals.put(newNonTerminal, production.substring(1));
+                        nonTerminalMapping.put(production, newNonTerminal);
+                    }
+                    newToStates.add(production.charAt(0) + newNonTerminal);
+                } else {
+                    newToStates.add(production);
+                }
+            }
+            newProductions.put(fromState, newToStates);
+        }
+
+        for (Map.Entry<String, String> entry : newNonTerminals.entrySet()) {
+            newProductions.put(entry.getKey(), List.of(entry.getValue()));
+        }
+
+        for (Map.Entry<String, List<String>> entry : newProductions.entrySet()) {
+            String fromState = entry.getKey();
+            List<String> toStates = entry.getValue();
+            List<String> newToStates = new ArrayList<>();
+            for (String production : toStates) {
+                if (production.length() == 2 && Character.isLowerCase(production.charAt(0)) && Character.isUpperCase(production.charAt(1))) {
+                    String terminal = production.substring(0, 1);
+                    String nonTerminal = terminalNonTerminals.getOrDefault(terminal, null);
+                    if (nonTerminal == null) {
+                        nonTerminal = generateNewVariable(newNonTerminals, index++, terminal);
+                        terminalNonTerminals.put(terminal, nonTerminal);
+                    }
+                    newToStates.add(nonTerminal + production.charAt(1));
+                } else {
+                    newToStates.add(production);
+                }
+            }
+            newProductions.put(fromState, newToStates);
+        }
+
+        for (Map.Entry<String, String> entry : newNonTerminals.entrySet()) {
             String nonTerminal = entry.getKey();
-            List<String> productionsList = entry.getValue();
-            List<String> newProductionsList = new ArrayList<>();
-
-            for(String production : productionsList) {
-                if((countNonTerminals(production) == 2 && countTerminals(production) == 0) || (countTerminals(production) == 1 && countNonTerminals(production) == 0) || nonTerminal.equals(startingSymbol + "'")) {
-                    newProductionsList.add(production);
-                    continue;
-                }
-
-                if(countNonTerminals(production) == 1 && countTerminals(production) == 1) {
-                    char nonTerminalChar = Character.isUpperCase(production.charAt(0)) ? production.charAt(0) : production.charAt(1);
-                    char terminalChar = Character.isLowerCase(production.charAt(0)) ? production.charAt(0) : production.charAt(1);
-
-                    String neededVar = getNeededVariable(String.valueOf(terminalChar), newProductions, addedVariables);
-                    if(neededVar == null) {
-                        String var = "X" + currentIndex;
-                        currentIndex++;
-                        addedVariables.add(var);
-                        newProductionsList.add(var + nonTerminalChar);
-                        newProductions.put(var, new ArrayList<>(List.of(String.valueOf(terminalChar))));
-                    } else {
-                        newProductionsList.add(neededVar + nonTerminalChar);
-                    }
-                }
-
-                if(countNonTerminals(production) == 3) {
-                    char nonTerminalChar1 = production.charAt(0);
-                    char nonTerminalChar2 = production.charAt(1);
-                    char nonTerminalChar3 = production.charAt(2);
-
-                    String neededVar = getNeededVariable(nonTerminalChar1 + String.valueOf(nonTerminalChar2), newProductions, addedVariables);
-                    if(neededVar == null) {
-                        String newVar = "X" + currentIndex;
-                        currentIndex++;
-                        addedVariables.add(newVar);
-                        newProductionsList.add(newVar + nonTerminalChar3);
-                        newProductions.put(newVar, new ArrayList<>(List.of(nonTerminalChar1 + String.valueOf(nonTerminalChar2))));
-                    } else {
-                        newProductionsList.add(neededVar + nonTerminalChar3);
-                    }
-                }
-
-                if(countTerminals(production) == 2 && countNonTerminals(production) == 0) {
-                    char terminalChar1 = production.charAt(0);
-                    char terminalChar2 = production.charAt(1);
-
-                    boolean added1 = false;
-                    String newVar1 = getNeededVariable(String.valueOf(terminalChar1), newProductions, addedVariables);
-                    if(newVar1 == null) {
-                        newVar1 = "X" + currentIndex;
-                        currentIndex++;
-                        addedVariables.add(newVar1);
-                        added1 = true;
-                    }
-
-                    boolean added2 = false;
-                    String newVar2 = getNeededVariable(String.valueOf(terminalChar2), newProductions, addedVariables);
-                    if(newVar2 == null) {
-                        newVar2 = "X" + currentIndex;
-                        currentIndex++;
-                        addedVariables.add(newVar2);
-                        added2 = true;
-                    }
-
-                    if(added1) {
-                        addedVariables.add(newVar1);
-                        newProductions.put(newVar1, new ArrayList<>(List.of(String.valueOf(terminalChar1))));
-                    }
-                    if(added2) {
-                        addedVariables.add(newVar2);
-                        newProductions.put(newVar2, new ArrayList<>(List.of(String.valueOf(terminalChar2))));
-                    }
-
-                    newProductionsList.add(newVar1 + newVar2);
-                }
-
-                if(countNonTerminals(production) == 1 && countTerminals(production) == 2) {
-                    int usedNonTerminal;
-
-                    if(Character.isUpperCase(production.charAt(0))) {
-                        usedNonTerminal = 0;
-                    } else if(Character.isUpperCase(production.charAt(1))) {
-                        usedNonTerminal = 1;
-                    } else {
-                        usedNonTerminal = 2;
-                    }
-
-                    char nonTerminalChar = production.charAt(usedNonTerminal);
-                    int usedTerminal1 = 0;
-                    char terminalChar1 = 0;
-
-                    for(int i = 0; i < 3; i++) {
-                        if(i != usedNonTerminal) {
-                            terminalChar1 = production.charAt(i);
-                            usedTerminal1 = i;
-                            break;
-                        }
-                    }
-
-                    char terminalChar2 = 0;
-                    for(int i = 0; i < 3; i++) {
-                        if(i != usedTerminal1 && i != usedNonTerminal) {
-                            terminalChar2 = production.charAt(i);
-                            break;
-                        }
-                    }
-
-                    boolean added1 = false;
-                    String newVar1 = getNeededVariable(String.valueOf(terminalChar1), newProductions, addedVariables);
-                    if(newVar1 == null) {
-                        newVar1 = "X" + currentIndex;
-                        currentIndex++;
-                        addedVariables.add(newVar1);
-                        added1 = true;
-                    }
-
-                    boolean added2 = false;
-                    String newVar2 = getNeededVariable(String.valueOf(terminalChar2), newProductions, addedVariables);
-                    if(newVar2 == null) {
-                        newVar2 = "X" + currentIndex;
-                        currentIndex++;
-                        addedVariables.add(newVar2);
-                        added2 = true;
-                    }
-
-                    boolean added3 = false;
-                    String newVar3 = getNeededVariable(newVar1 + newVar2, newProductions, addedVariables);
-                    if(newVar3 == null) {
-                        newVar3 = "X" + currentIndex;
-                        currentIndex++;
-                        addedVariables.add(newVar3);
-                        added3 = true;
-                    }
-
-                    if(added1) {
-                        addedVariables.add(newVar1);
-                        newProductions.put(newVar1, new ArrayList<>(List.of(String.valueOf(terminalChar1))));
-                    }
-                    if(added2) {
-                        addedVariables.add(newVar2);
-                        newProductions.put(newVar2, new ArrayList<>(List.of(String.valueOf(terminalChar2))));
-                    }
-                    if(added3) {
-                        addedVariables.add(newVar3);
-                        newProductions.put(newVar3, new ArrayList<>(List.of(newVar1 + newVar2)));
-                    }
-
-                    newProductionsList.add(newVar3 + nonTerminalChar);
-                }
-            }
-
-            newProductions.put(nonTerminal, newProductionsList);
+            String terminal = entry.getValue();
+            newProductions.put(nonTerminal, List.of(terminal));
         }
-        return newProductions;
+
+        this.productions = newProductions;
     }
 
-    private String getNeededVariable(String s, Map<String, List<String>> productions, Set<String> addedVariables) {
-        for(Map.Entry<String, List<String>> entry : productions.entrySet()) {
-            List<String> productionsList = entry.getValue();
-            for(String production : productionsList) {
-                if(production.contains(s) && addedVariables.contains(entry.getKey())) {
-                    return entry.getKey();
-                }
-            }
-        }
-        return null;
+    private String generateNewVariable(Map<String, String> newNonTerminals, int index, String symbols) {
+        String newNonTerminal = "X" + index;
+        newNonTerminals.put(newNonTerminal, symbols);
+        return newNonTerminal;
     }
 
     public Map<String, List<String>> getProductions() {
