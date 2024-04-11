@@ -112,16 +112,7 @@ public class FiniteAutomaton {
     }
 
     public Grammar toGrammar(boolean mapStatesToNonTerminals) {
-        Set<String> newStates = new HashSet<>();
-        if(mapStatesToNonTerminals) {
-            for(String state : states) {
-                newStates.add(mapStateToSymbol(state));
-            }
-        } else {
-            newStates = new HashSet<>(states);
-        }
-
-        return new Grammar(startState, newStates, alphabet, buildProductions(mapStatesToNonTerminals));
+        return new Grammar(startState, buildProductions(mapStatesToNonTerminals));
     }
 
     public Grammar toGrammar() {
