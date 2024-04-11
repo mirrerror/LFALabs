@@ -3,17 +3,37 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Grammar {
 
-    private final String startingSymbol;
-    private final Set<String> nonTerminalSymbols;
-    private final Set<String> terminalSymbols;
+    private String startingSymbol;
+    private Set<String> nonTerminalSymbols;
+    private Set<String> terminalSymbols;
     private Map<String, List<String>> productions;
 
     public Grammar(String startingSymbol, Map<String, List<String>> productions) {
-        this.startingSymbol = startingSymbol;
+        setupGrammar(startingSymbol, productions);
+    }
+
+    public Grammar(Map<String, List<String>> productions) {
+        setupGrammar(null, productions);
+    }
+
+    private void setupGrammar(String startingSymbol, Map<String, List<String>> productions) {
         this.nonTerminalSymbols = new HashSet<>();
         this.terminalSymbols = new HashSet<>();
         this.productions = new HashMap<>();
+
         productions.forEach((key, value) -> this.productions.put(key, new ArrayList<>(value)));
+
+        if(startingSymbol == null) {
+            Optional<String> firstSymbol = productions.keySet().stream().findFirst();
+            if(firstSymbol.isPresent()) {
+                this.startingSymbol = firstSymbol.get();
+            } else {
+                throw new IllegalArgumentException("The productions map is empty.");
+            }
+        } else {
+            this.startingSymbol = startingSymbol;
+        }
+
         determineTerminalsAndNonTerminals();
     }
 
