@@ -96,7 +96,7 @@ class GrammarTest {
         assertTrue(countSymbolsWithVariablesAsOneSymbol(Set.of("X0", "X1", "X2", "X3"), grammar));
     }
 
-    public boolean countSymbolsWithVariablesAsOneSymbol(Set<String> variables, Grammar grammar) {
+    private boolean countSymbolsWithVariablesAsOneSymbol(Set<String> variables, Grammar grammar) {
         return grammar.getProductions().values().stream().allMatch(productions ->
                 productions.stream().allMatch(production -> countSymbols(variables, production) <= 2)
         );
