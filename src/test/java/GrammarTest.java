@@ -81,19 +81,21 @@ class GrammarTest {
 
     @Test
     void normalizeToChomskyForm() {
-        Map<String, List<String>> productions = Map.of(
+        Map<String, List<String>> productions = new HashMap<>(Map.of(
                 "S", List.of("aB", "AC"),
                 "A", List.of("a", "ASC", "BC", "aD"),
                 "B", List.of("b", "bS"),
                 "C", List.of("", "BA"),
                 "D", List.of("abC"),
                 "E", List.of("aB")
-        );
+        ));
 
         Grammar grammar = new Grammar(productions);
         grammar.normalizeToChomskyForm();
 
         assertTrue(countSymbolsWithVariablesAsOneSymbol(Set.of("X0", "X1", "X2", "X3"), grammar));
+        assertFalse(grammar.getProductions().containsKey("E"));
+        assertFalse(grammar.getProductions().get("C").contains(""));
     }
 
     private boolean countSymbolsWithVariablesAsOneSymbol(Set<String> variables, Grammar grammar) {
