@@ -8,6 +8,9 @@ public class Grammar {
     private Set<String> terminalSymbols;
     private Map<String, List<String>> productions;
 
+    private Set<String> variables;
+    private int variablesCounter;
+
     public Grammar(String startingSymbol, Map<String, List<String>> productions) {
         setupGrammar(startingSymbol, productions);
     }
@@ -20,6 +23,7 @@ public class Grammar {
         this.nonTerminalSymbols = new HashSet<>();
         this.terminalSymbols = new HashSet<>();
         this.productions = new HashMap<>();
+        this.variables = new HashSet<>();
 
         productions.forEach((key, value) -> this.productions.put(key, new ArrayList<>(value)));
 
@@ -365,6 +369,14 @@ public class Grammar {
     }
 
     private void convertToChomskyForm() {
+        boolean remained = false;
+        Map<String, List<String>> previousProductions;
+        while(!remained) {
+            previousProductions = new HashMap<>(productions);
+            setupVariables();
+            remained = productionsMapRemainedSame(previousProductions, new HashMap<>(productions));
+        }
+
         for(Map.Entry<String, List<String>> entry : new HashMap<>(productions).entrySet()) {
             boolean found = false;
             List<String> productionsList = entry.getValue();
@@ -373,7 +385,7 @@ public class Grammar {
                 for(char c : production.toCharArray()) {
                     if(startingSymbol.equals(String.valueOf(c))) {
                         productions.put(startingSymbol + "'", new ArrayList<>(List.of(startingSymbol)));
-                        startingSymbol = startingSymbol + "'";
+                        startingSymbol += "'";
                         found = true;
                         break;
                     }
@@ -383,7 +395,6 @@ public class Grammar {
             if(found) break;
         }
 
-        setupVariables();
         determineTerminalsAndNonTerminals();
     }
 
@@ -392,21 +403,33 @@ public class Grammar {
         Map<String, String> newNonTerminals = new HashMap<>();
         Map<String, String> nonTerminalMapping = new HashMap<>();
         Map<String, List<String>> newProductions = new HashMap<>(productions);
-        int index = 0;
 
         for (Map.Entry<String, List<String>> entry : newProductions.entrySet()) {
             String fromState = entry.getKey();
             List<String> toStates = entry.getValue();
             List<String> newToStates = new ArrayList<>();
             for (String production : toStates) {
-                if (production.length() > 2) {
+                if (calculateProductionLength(production) > 2) {
                     String newNonTerminal = nonTerminalMapping.get(production);
                     if (newNonTerminal == null) {
-                        newNonTerminal = generateNewVariable(newNonTerminals, index++, production);
+                        newNonTerminal = generateNewVariable(newNonTerminals, variablesCounter++, production);
                         newNonTerminals.put(newNonTerminal, production.substring(1));
                         nonTerminalMapping.put(production, newNonTerminal);
                     }
                     newToStates.add(production.charAt(0) + newNonTerminal);
+                } else if (calculateProductionLength(production) == 2 && Character.isLowerCase(production.charAt(0)) && Character.isLowerCase(production.charAt(1))) {
+                    // Handle two terminals case
+                    String newNonTerminal1 = terminalNonTerminals.getOrDefault(production.substring(0, 1), null);
+                    String newNonTerminal2 = terminalNonTerminals.getOrDefault(production.substring(1), null);
+                    if (newNonTerminal1 == null) {
+                        newNonTerminal1 = generateNewVariable(newNonTerminals, variablesCounter++, production.substring(0, 1));
+                        terminalNonTerminals.put(production.substring(0, 1), newNonTerminal1);
+                    }
+                    if (newNonTerminal2 == null) {
+                        newNonTerminal2 = generateNewVariable(newNonTerminals, variablesCounter++, production.substring(1));
+                        terminalNonTerminals.put(production.substring(1), newNonTerminal2);
+                    }
+                    newToStates.add(newNonTerminal1 + newNonTerminal2);
                 } else {
                     newToStates.add(production);
                 }
@@ -423,11 +446,11 @@ public class Grammar {
             List<String> toStates = entry.getValue();
             List<String> newToStates = new ArrayList<>();
             for (String production : toStates) {
-                if (production.length() == 2 && Character.isLowerCase(production.charAt(0)) && Character.isUpperCase(production.charAt(1))) {
+                if (calculateProductionLength(production) == 2 && Character.isLowerCase(production.charAt(0)) && Character.isUpperCase(production.charAt(1))) {
                     String terminal = production.substring(0, 1);
                     String nonTerminal = terminalNonTerminals.getOrDefault(terminal, null);
                     if (nonTerminal == null) {
-                        nonTerminal = generateNewVariable(newNonTerminals, index++, terminal);
+                        nonTerminal = generateNewVariable(newNonTerminals, variablesCounter++, terminal);
                         terminalNonTerminals.put(terminal, nonTerminal);
                     }
                     newToStates.add(nonTerminal + production.charAt(1));
@@ -447,9 +470,69 @@ public class Grammar {
         this.productions = newProductions;
     }
 
+    private boolean productionsMapRemainedSame(Map<String, List<String>> originalProductions, Map<String, List<String>> newProductions) {
+        if (originalProductions.size() != newProductions.size()) {
+            return false;
+        }
+
+        for (Map.Entry<String, List<String>> entry : originalProductions.entrySet()) {
+            String fromState = entry.getKey();
+            List<String> originalToStates = entry.getValue();
+            List<String> newToStates = newProductions.get(fromState);
+
+            if (newToStates == null || originalToStates.size() != newToStates.size()) {
+                return false;
+            }
+
+            for (String production : originalToStates) {
+                if (!newToStates.contains(production)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private int calculateProductionLength(String production) {
+        int length = 0;
+        int index = 0;
+
+        if (!variables.isEmpty()) {
+            while (index < production.length()) {
+                boolean foundVariable = false;
+                for (String variable : variables) {
+                    if (production.substring(index).startsWith(variable)) {
+                        length++;
+                        index += variable.length();
+                        foundVariable = true;
+                        break;
+                    }
+                }
+                if (!foundVariable) {
+                    length++;
+                    index++;
+                }
+            }
+        } else {
+            length = production.length();
+        }
+
+        return length;
+    }
+
     private String generateNewVariable(Map<String, String> newNonTerminals, int index, String symbols) {
+        for(String variable : variables) {
+            for(String production : productions.getOrDefault(variable, Collections.emptyList())) {
+                if(production.equals(symbols)) {
+                    return variable;
+                }
+            }
+        }
+
         String newNonTerminal = "X" + index;
         newNonTerminals.put(newNonTerminal, symbols);
+        variables.add(newNonTerminal);
         return newNonTerminal;
     }
 
@@ -484,20 +567,6 @@ public class Grammar {
                     }
                 }
             }
-        }
-    }
-
-    public void printGrammar() {
-        for (Map.Entry<String, List<String>> entry : productions.entrySet()) {
-            System.out.print(entry.getKey() + " -> ");
-            List<String> productionList = entry.getValue();
-            for (int i = 0; i < productionList.size(); i++) {
-                System.out.print(productionList.get(i));
-                if (i < productionList.size() - 1) {
-                    System.out.print(" | ");
-                }
-            }
-            System.out.println();
         }
     }
 
