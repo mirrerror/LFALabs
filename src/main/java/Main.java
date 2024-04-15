@@ -53,7 +53,8 @@ public class Main {
 
         Grammar grammar = finiteAutomaton.toGrammar();
 
-        System.out.println("The grammar was converted to a finite automaton and then back to a grammar. The resulting grammar productions are: " + grammar.getProductions());
+        System.out.println("The grammar was converted to a finite automaton and then back to a grammar. The resulting grammar productions are: ");
+        grammar.printGrammar();
 
         grammar.defineChomskyType();
 
@@ -122,9 +123,10 @@ public class Main {
 
         Grammar grammar = new Grammar(productions);
 
+        System.out.println("The initial grammar productions are: ");
+        grammar.printGrammar();
         grammar.normalizeToChomskyForm();
-
-        System.out.println("The initial grammar productions are: " + productions);
-        System.out.println("The grammar was normalized to the Chomsky form. The resulting grammar productions are: " + grammar.getProductions());
+        System.out.println("The grammar was normalized to the Chomsky form. The resulting grammar productions are: ");
+        grammar.printGrammar();
     }
 }

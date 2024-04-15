@@ -373,6 +373,7 @@ public class Grammar {
                 for(char c : production.toCharArray()) {
                     if(startingSymbol.equals(String.valueOf(c))) {
                         productions.put(startingSymbol + "'", new ArrayList<>(List.of(startingSymbol)));
+                        startingSymbol = startingSymbol + "'";
                         found = true;
                         break;
                     }
@@ -483,6 +484,20 @@ public class Grammar {
                     }
                 }
             }
+        }
+    }
+
+    public void printGrammar() {
+        for (Map.Entry<String, List<String>> entry : productions.entrySet()) {
+            System.out.print(entry.getKey() + " -> ");
+            List<String> productionList = entry.getValue();
+            for (int i = 0; i < productionList.size(); i++) {
+                System.out.print(productionList.get(i));
+                if (i < productionList.size() - 1) {
+                    System.out.print(" | ");
+                }
+            }
+            System.out.println();
         }
     }
 
