@@ -142,6 +142,13 @@ public class Main {
 
         List<Token> tokens = arithmeticLexer.tokenize(input);
 
+        for (Token token : tokens) {
+            if (token.getType() == TokenType.ERROR) {
+                System.err.println(token.getValue());
+                return;
+            }
+        }
+
         System.out.println("The generated AST is:");
         ASTBuilder astBuilder = new ASTBuilder(tokens);
         astBuilder.printAST();
