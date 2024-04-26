@@ -1,10 +1,12 @@
+import lexer.*;
+
 import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.print("Enter the lab number (from 1 to 5): ");
+        System.out.print("Enter the lab number (from 1 to 6): ");
         int labNumber = scanner.nextInt();
 
         Scanner labScanner = new Scanner(System.in);
@@ -15,6 +17,7 @@ public class Main {
             case 3 -> testThirdLab(labScanner);
             case 4 -> testFourthLab();
             case 5 -> testFifthLab();
+            case 6 -> testSixthLab(labScanner);
             default -> System.err.println("Invalid lab number.");
         }
     }
@@ -30,7 +33,7 @@ public class Main {
         FiniteAutomaton finiteAutomaton = grammar.toFiniteAutomaton();
 
         System.out.println("Generating 5 strings using the provided grammar:");
-        for(int i = 1; i <= 5; i++) System.out.println(i + ". " + grammar.generateString());
+        for (int i = 1; i <= 5; i++) System.out.println(i + ". " + grammar.generateString());
 
         System.out.print("Enter a string to check if it belongs to the language: ");
         String input = scanner.nextLine();
@@ -66,6 +69,7 @@ public class Main {
         System.out.println("The finite automaton was converted to deterministic. The resulting transitions are: " + convertedAutomaton.getTransitions());
         convertedAutomaton.visualize("The converted finite automaton");
     }
+
     private static void testThirdLab(Scanner scanner) {
         ArithmeticLexer arithmeticLexer = new ArithmeticLexer();
 
@@ -81,12 +85,12 @@ public class Main {
 
         arithmeticLexer.setIgnoreWhitespace(ignoreWhitespace.equalsIgnoreCase("y"));
 
-        List<ArithmeticLexer.Token> tokens = arithmeticLexer.tokenize(input);
+        List<Token> tokens = arithmeticLexer.tokenize(input);
 
         List<String> answer = new ArrayList<>();
 
-        for (ArithmeticLexer.Token token : tokens) {
-            if (token.getType() == ArithmeticLexer.TokenType.ERROR) {
+        for (Token token : tokens) {
+            if (token.getType() == TokenType.ERROR) {
                 System.err.println(token.getValue());
                 return;
             }
@@ -126,5 +130,18 @@ public class Main {
 
         System.out.println("The initial grammar productions are: " + productions);
         System.out.println("The grammar was normalized to the Chomsky form. The resulting grammar productions are: " + grammar.getProductions());
+    }
+
+    private static void testSixthLab(Scanner scanner) {
+        ArithmeticLexer arithmeticLexer = new ArithmeticLexer(true);
+
+        System.out.print("Enter an arithmetic expression: ");
+        String input = scanner.nextLine();
+
+        List<Token> tokens = arithmeticLexer.tokenize(input);
+
+        System.out.println("The generated AST is:");
+        ASTBuilder astBuilder = new ASTBuilder(tokens);
+        astBuilder.printAST();
     }
 }
